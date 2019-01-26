@@ -27,3 +27,11 @@ def get_instrument_replica(prices, m, n, t):
             constraints.append(cp.sum(us[i, :k]) >= 0.)
             constraints.append(us[i, k] >= -1.*lambdas[i]/(alphas[i]*t))
             constraints.append(us[i, k] <= aux[i, k])
+
+
+if __name__ == "__main__":
+    m = 20
+    n = 20
+    t = 1000
+    prices = ut.get_prices('S&P500')
+    get_instrument_replica(prices, m, n, t)
