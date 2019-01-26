@@ -34,15 +34,15 @@ def get_data_from_yahoo(reload_sp500=False):
     end = dt.datetime.now()
     for ticker in tickers:
         # just in case your connection breaks, we'd like to save our progress!
-        if not os.path.exists('stock_dfs/{}.csv'.format(ticker)):
-            df = web.DataReader(ticker, 'morningstar', start, end)
+        if not os.path.exists('stock_dfs/{}.csv'.format(ticker['ticker'])):
+            df = web.DataReader(ticker['ticker'], 'morningstar', start, end)
             df.reset_index(inplace=True)
             df.set_index("Date", inplace=True)
             df = df.drop("Symbol", axis=1)
-            df.to_csv('stock_dfs/{}.csv'.format(ticker))
+            df.to_csv('stock_dfs/{}.csv'.format(ticker['ticker']))
         else:
-            print('Already have {}'.format(ticker))
+            print('Already have {}'.format(ticker['ticker']))
 
 
 if __name__ == "__main__":
-    save_sp500_tickers()
+    get_data_from_yahoo()
