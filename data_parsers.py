@@ -15,10 +15,29 @@ def save_sp500_tickers():
     for row in table.findAll('tr')[1:]:
         tickers.append({'ticker': row.findAll('td')[0].text,
                         'name': row.findAll('td')[1].text,
-                        'sector': row.findAll('td')[3].text})
+                        'sector': row.findAll('td')[3].text.replace('\n', '')})
     with open("sp500tickers.pickle", "wb") as f:
         pickle.dump(tickers, f)
     return tickers
+
+
+def save_market_cap_data():
+    f = open("sp500tickers.pickle", "rb")
+    tickers = pickle.load(f)
+    headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17'}
+    for count, ticker in enumerate(tickers):
+        r = requests.get("http://www.zacks.com/stock/quote/"+ticker['ticker'], headers=headers)
+        soup = bs.BeautifulSoup(r.content, "html.parser")
+        for tr in soup.findAll("table", class_="abut_bottom"):
+            for td in tr.find_all("td"):
+                if td.text == "Market Cap":
+                    print(td.find_next_sibling("td").text)
+                    ticker['market_cap'] = td.find_next_sibling("td").text
+        if count % 10 == 0:
+            print(count)
+    f.close()
+    f = open("sp500tickers.pickle", "wb")
+    pickle.dump(tickers, f)
 
 
 # save_sp500_tickers()
@@ -69,4 +88,4 @@ def compile_data():
 
 
 if __name__ == "__main__":
-    compile_data()
+    save_market_cap_data()
