@@ -25,7 +25,7 @@ def save_market_cap_data():
     f = open("sp500tickers.pickle", "rb")
     tickers = pickle.load(f)
     headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17'}
-    for count, ticker in enumerate(tickers):
+    for ticker in tickers:
         r = requests.get("http://www.zacks.com/stock/quote/"+ticker['ticker'], headers=headers)
         soup = bs.BeautifulSoup(r.content, "html.parser")
         for tr in soup.findAll("table", class_="abut_bottom"):
@@ -33,8 +33,6 @@ def save_market_cap_data():
                 if td.text == "Market Cap":
                     print(td.find_next_sibling("td").text)
                     ticker['market_cap'] = td.find_next_sibling("td").text
-        if count % 10 == 0:
-            print(count)
     f.close()
     f = open("sp500tickers.pickle", "wb")
     pickle.dump(tickers, f)
