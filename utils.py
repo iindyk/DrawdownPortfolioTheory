@@ -6,6 +6,8 @@ from operator import itemgetter
 
 def get_adj_returns(n):
     data = pd.read_csv('sp500_joined_closes.csv')
+    tickers = get_diverse_list_of_tickers(n)
+
     # todo
     return None
 
@@ -33,7 +35,7 @@ def get_diverse_list_of_tickers(n):
                 except KeyError:
                     market_cap_na += 1
         # get n companies with the biggest market cap from sector
-        return_list.extend(heapq.nlargest(k, tmp_sector.items(), key=itemgetter(1)))
+        return_list.extend(dict(heapq.nlargest(k, tmp_sector.items(), key=itemgetter(1))).keys())
     f.close()
     print('Market Cap data was not available for', market_cap_na, 'companies')
     return return_list
