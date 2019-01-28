@@ -7,7 +7,7 @@ from operator import itemgetter
 
 
 def get_adj_returns(n, r0):
-    data = pd.read_csv('joined_closes.csv')
+    data = pd.read_csv('joined_closes_weekly.csv')
     tickers = get_diverse_list_of_tickers(n)
     prices = []
     for ticker in tickers:
@@ -24,6 +24,7 @@ def get_adj_returns(n, r0):
 def get_diverse_list_of_tickers(n):
     f = open("sp500tickers.pickle", "rb")
     tickers = pickle.load(f)
+    f.close()
     sectors = set()
     for ticker in tickers:
         sectors.add(ticker['sector'])
@@ -53,7 +54,7 @@ def get_diverse_list_of_tickers(n):
 def get_prices(name):
     assert name in ['^GSPC', '^IXIC', '^SML', '^DJI']
     # read data from file
-    data = pd.read_csv('joined_closes.csv')
+    data = pd.read_csv('joined_closes_weekly.csv')
     return list(data[name])
 
 

@@ -1,6 +1,7 @@
 import numpy as np
 import cvxpy as cp
 import utils as ut
+import resource
 
 
 def get_instrument_replica(prices, m, n):
@@ -22,13 +23,13 @@ def get_instrument_replica(prices, m, n):
                    v*mu == returns@cp.sum(us, axis=0),
                    aux >= 0.,
                    aux >= us]
-
     # add constraints for u
     for i in range(m):
-        constraints.append(cp.sum(us[i]) == 0.)
-        constraints.append(cp.sum(aux[i]) <= lambdas[i])
+        constraints.append(cp.sum(us[i, :]) == 0.)
+        constraints.append(cp.sum(aux[i, :]) <= lambdas[i])
         for k in range(t):
-            constraints.append(cp.sum(us[i, :k]) >= 0.)
+            if k >= 1:
+                constraints.append(cp.sum(us[i, :k]) >= 0.)
             constraints.append(us[i, k] >= -1.*lambdas[i]/(alphas[i]*t))
 
     # optimization
@@ -40,5 +41,12 @@ def get_instrument_replica(prices, m, n):
 if __name__ == "__main__":
     m = 20
     n = 20
-    prices = ut.get_prices('^GSPC')
+    prices = ut.get_prices('^GSPC') # todo: adjusted prices?
+    # setting max heap size limit
+    rsrc = resource.RLIMIT_DATA
+    _, hard = resource.getrlimit(rsrc)
+    resource.setrlimit(rsrc, ((1024 ** 3) * 8, hard))
+    soft, hard = resource.getrlimit(rsrc)
+    print('Soft RAM limit set to:', soft / (1024 ** 3), 'GB')
+
     print(get_instrument_replica(prices, m, n))

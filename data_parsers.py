@@ -18,6 +18,7 @@ def save_sp500_tickers():
                         'sector': row.findAll('td')[3].text.replace('\n', '')})
     with open("sp500tickers.pickle", "wb") as f:
         pickle.dump(tickers, f)
+        f.close()
     return tickers
 
 
@@ -36,6 +37,7 @@ def save_market_cap_data():
     f.close()
     f = open("sp500tickers.pickle", "wb")
     pickle.dump(tickers, f)
+    f.close()
 
 
 # save_sp500_tickers()
@@ -45,6 +47,7 @@ def get_data_from_yahoo(reload_sp500=False):
     else:
         with open("sp500tickers.pickle", "rb") as f:
             tickers = pickle.load(f)
+            f.close()
     if not os.path.exists('stock_dfs'):
         os.makedirs('stock_dfs')
 
@@ -64,6 +67,7 @@ def get_data_from_yahoo(reload_sp500=False):
 def compile_data():
     with open("sp500tickers.pickle", "rb") as f:
         tickers = pickle.load(f)
+        f.close()
 
     # add indices
     tickers.append({'ticker': '^GSPC'})
@@ -88,7 +92,7 @@ def compile_data():
         if count % 10 == 0:
             print(count)
     print(main_df.head())
-    main_df.to_csv('joined_closes.csv')
+    main_df.to_csv('joined_closes_daily.csv')
 
 
 if __name__ == "__main__":
