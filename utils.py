@@ -6,7 +6,7 @@ import cvxpy as cp
 from operator import itemgetter
 
 
-def get_adj_returns(n):
+def get_adj_returns(n, r0):
     data = pd.read_csv('joined_closes.csv')
     tickers = get_diverse_list_of_tickers(n)
     prices = []
@@ -14,7 +14,6 @@ def get_adj_returns(n):
         prices.append(list(data[ticker]))
     prices = np.array(prices)
     t = len(prices[0])
-    r0 = np.ones(t)   # todo: return of a risk-free asset
     adj_returns = np.zeros_like(prices)
     for i in range(n):
         for j in range(t):
@@ -59,9 +58,9 @@ def get_prices(name):
 
 
 def cvar(prices, alpha):
-    c = cp.Variable(1)
-    objective = cp.Minimize(c + (1. / (1. - alpha)) * sum([max(p - c, 0) for p in prices]))
-    problem = cp.Problem(objective)
+    c = cp.Variable()
+    objective = cp.Minimize(c + (1. / (1. - alpha)) * cp.sum(cp.maximum(prices - c, 0)))
+    problem = cp.Problem(objective, constraints=[])
     problem.solve()
     return objective.value
 

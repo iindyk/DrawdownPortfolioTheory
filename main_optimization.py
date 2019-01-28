@@ -5,20 +5,21 @@ import utils as ut
 
 def get_instrument_replica(prices, m, n):
     alphas = np.array([i/(m+1) for i in range(1, m+1)])
-    returns = ut.get_adj_returns(n)
-    _, t = np.shape(returns)
+    t = len(prices)
+    r0 = np.ones(t)  # todo: return of a risk-free asset
+    returns = ut.get_adj_returns(n, r0)
     mu = returns[:, -1]
     rhos = np.array([ut.cvar(ut.drawdown(prices), alpha) for alpha in alphas])
 
     # create variables
     lambdas = cp.Variable(m)
-    v = cp.Variable(1)
+    v = cp.Variable()
     us = cp.Variable((m, t))
     aux = cp.Variable((m, t))   # aux = max(us, 0)
-    objective = cp.Minimize(cp.multiply(lambdas, rhos)-v)
+    objective = cp.Minimize(lambdas@rhos-v)
     constraints = [lambdas >= 0.,
                    cp.sum(lambdas) == 1.,
-                   v*mu == np.multiply(returns, cp.sum(us, axis=0)),
+                   v*mu == returns@cp.sum(us, axis=0),
                    aux >= 0.,
                    aux >= us]
 
@@ -32,12 +33,12 @@ def get_instrument_replica(prices, m, n):
 
     # optimization
     problem = cp.Problem(objective, constraints)
-    problem.solve()
+    problem.solve(solver=cp.GLPK)
     return lambdas.value, v.value, us.value, objective.value
 
 
 if __name__ == "__main__":
     m = 20
     n = 20
-    prices = ut.get_prices('S&P500')
+    prices = ut.get_prices('^GSPC')
     print(get_instrument_replica(prices, m, n))
