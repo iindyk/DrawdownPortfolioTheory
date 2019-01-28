@@ -8,7 +8,7 @@ def get_instrument_replica(prices, m, n):
     returns = ut.get_adj_returns(n)
     _, t = np.shape(returns)
     mu = returns[:, -1]
-    rhos = np.array([ut.cvar(alpha, prices) for alpha in alphas])
+    rhos = np.array([ut.cvar(ut.drawdown(prices), alpha) for alpha in alphas])
 
     # create variables
     lambdas = cp.Variable(m)

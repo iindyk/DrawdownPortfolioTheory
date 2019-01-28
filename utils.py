@@ -2,6 +2,7 @@ import pandas as pd
 import pickle
 import heapq
 import numpy as np
+import cvxpy as cp
 from operator import itemgetter
 
 
@@ -57,14 +58,20 @@ def get_prices(name):
     return list(data[name])
 
 
-def cvar(alpha, prices):
-    # todo
-    return None
+def cvar(prices, alpha):
+    c = cp.Variable(1)
+    objective = cp.Minimize(c + (1. / (1. - alpha)) * sum([max(p - c, 0) for p in prices]))
+    problem = cp.Problem(objective)
+    problem.solve()
+    return objective.value
 
 
 def drawdown(prices):
-    # todo
-    return None
+    n = len(prices)
+    d = np.zeros(n)
+    for i in range(n):
+        d[i] = max(prices[:i+1])-prices[i]
+    return d
 
 
 if __name__ == "__main__":
