@@ -65,6 +65,12 @@ def compile_data():
     with open("sp500tickers.pickle", "rb") as f:
         tickers = pickle.load(f)
 
+    # add indices
+    tickers.append({'ticker': '^GSPC'})
+    tickers.append({'ticker': '^IXIC'})
+    tickers.append({'ticker': '^SML'})
+    tickers.append({'ticker': '^DJI'})
+
     main_df = pd.DataFrame()
 
     for count, ticker in enumerate(tickers):
@@ -82,8 +88,8 @@ def compile_data():
         if count % 10 == 0:
             print(count)
     print(main_df.head())
-    main_df.to_csv('sp500_joined_closes.csv')
+    main_df.to_csv('joined_closes.csv')
 
 
 if __name__ == "__main__":
-    save_market_cap_data()
+    compile_data()

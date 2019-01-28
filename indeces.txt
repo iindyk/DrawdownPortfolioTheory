@@ -1,0 +1,4 @@
+^GSPC - S&P 500
+^IXIC - NASDAQ Composite
+^SML  - S&P 600
+^DJI  - Dow Jones Industrial Average
