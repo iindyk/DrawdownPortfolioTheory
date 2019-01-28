@@ -62,5 +62,10 @@ def cvar(alpha, prices):
     return None
 
 
+def drawdown(prices):
+    # todo
+    return None
+
+
 if __name__ == "__main__":
     print(get_adj_returns(12))
