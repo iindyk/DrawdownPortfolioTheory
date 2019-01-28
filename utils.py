@@ -1,15 +1,24 @@
 import pandas as pd
 import pickle
 import heapq
+import numpy as np
 from operator import itemgetter
 
 
 def get_adj_returns(n):
-    data = pd.read_csv('sp500_joined_closes.csv')
+    data = pd.read_csv('joined_closes.csv')
     tickers = get_diverse_list_of_tickers(n)
-
-    # todo
-    return None
+    prices = []
+    for ticker in tickers:
+        prices.append(list(data[ticker]))
+    prices = np.array(prices)
+    t = len(prices[0])
+    r0 = np.ones(t)   # todo: return of a risk-free asset
+    adj_returns = np.zeros_like(prices)
+    for i in range(n):
+        for j in range(t):
+            adj_returns[i, j] = prices[i, j]/(r0[j]*prices[i, 0])-1.
+    return adj_returns
 
 
 def get_diverse_list_of_tickers(n):
@@ -42,8 +51,10 @@ def get_diverse_list_of_tickers(n):
 
 
 def get_prices(name):
-    # todo
-    return None
+    assert name in ['^GSPC', '^IXIC', '^SML', '^DJI']
+    # read data from file
+    data = pd.read_csv('joined_closes.csv')
+    return list(data[name])
 
 
 def cvar(alpha, prices):
@@ -52,4 +63,4 @@ def cvar(alpha, prices):
 
 
 if __name__ == "__main__":
-    print(get_diverse_list_of_tickers(12))
+    print(get_adj_returns(12))
