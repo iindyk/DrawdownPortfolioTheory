@@ -63,14 +63,17 @@ def get_prices(name, r0):
     return adj_returns
 
 
-def cvar(prices, alpha):
+def cvar(losses, alpha):
     # todo: fix
-    l = len(prices)
+    l = len(losses)
 
     def f(c):
-        return c + (1. / ((1. - alpha)*l)) * sum([max(p - c, 0) for p in prices])
-    sol = minimize(f, 0.0)
-    return sol.fun
+        return c + (1. / ((1. - alpha)*l)) * np.sum([max(p - c, 0) for p in losses])
+    sol = minimize(f, np.array(0.0))
+    try:
+        return sol.fun[0]
+    except TypeError:
+        return sol.fun
 
 
 def drawdown(prices):
@@ -83,6 +86,7 @@ def drawdown(prices):
 
 if __name__ == "__main__":
     prices = np.array([-100, -20, -20, -20, 0, 0, 0, 0, 50, 50])
+    losses = -1*prices
     alphas = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9]
     for alpha in alphas:
-        print(cvar(prices, alpha))
+        print(cvar(losses, alpha))
