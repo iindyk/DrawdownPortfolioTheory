@@ -64,6 +64,7 @@ def get_prices(name, r0):
 
 
 def cvar(prices, alpha):
+    # todo: fix
     c = cp.Variable()
     objective = cp.Minimize(c + (1. / (1. - alpha)) * cp.sum(cp.maximum(prices - c, 0)))
     problem = cp.Problem(objective, constraints=[])
