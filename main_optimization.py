@@ -10,6 +10,7 @@ def get_instrument_replica(prices, m, n, r0):
     returns = ut.get_adj_returns(n, r0)
     mu = returns[:, -1]
     rhos = np.array([ut.cvar(ut.drawdown(prices), alpha) for alpha in alphas])
+    print(rhos)
 
     # create variables
     lambdas = cp.Variable(m)
@@ -42,7 +43,7 @@ if __name__ == "__main__":
     n = 20
     t = 455
     r0 = np.ones(t)  # todo: return of a risk-free asset
-    prices = ut.get_prices('^GSPC', r0) # todo: adjusted prices?
+    prices = ut.get_prices('^IXIC', r0)
     # setting max heap size limit
     rsrc = resource.RLIMIT_DATA
     _, hard = resource.getrlimit(rsrc)
