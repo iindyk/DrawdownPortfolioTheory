@@ -2,7 +2,7 @@ import pandas as pd
 import pickle
 import heapq
 import numpy as np
-import cvxpy as cp
+from scipy.optimize import minimize
 from operator import itemgetter
 
 
@@ -65,11 +65,12 @@ def get_prices(name, r0):
 
 def cvar(prices, alpha):
     # todo: fix
-    c = cp.Variable()
-    objective = cp.Minimize(c + (1. / (1. - alpha)) * cp.sum(cp.maximum(prices - c, 0)))
-    problem = cp.Problem(objective, constraints=[])
-    problem.solve()
-    return objective.value
+    l = len(prices)
+
+    def f(c):
+        return c + (1. / ((1. - alpha)*l)) * sum([max(p - c, 0) for p in prices])
+    sol = minimize(f, 0.0)
+    return sol.fun
 
 
 def drawdown(prices):
@@ -81,4 +82,7 @@ def drawdown(prices):
 
 
 if __name__ == "__main__":
-    print(get_adj_returns(12))
+    prices = np.array([-100, -20, -20, -20, 0, 0, 0, 0, 50, 50])
+    alphas = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9]
+    for alpha in alphas:
+        print(cvar(prices, alpha))

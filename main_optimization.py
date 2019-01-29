@@ -35,7 +35,7 @@ def get_instrument_replica(prices, m, n, r0):
     # optimization
     problem = cp.Problem(objective, constraints)
     problem.solve(solver=cp.GLPK)
-    return lambdas.value, v.value, us.value, objective.value
+    return lambdas.value, v.value, us.value, problem.value
 
 
 if __name__ == "__main__":
