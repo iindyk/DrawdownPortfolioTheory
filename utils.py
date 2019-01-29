@@ -51,11 +51,16 @@ def get_diverse_list_of_tickers(n):
     return return_list
 
 
-def get_prices(name):
+def get_prices(name, r0):
     assert name in ['^GSPC', '^IXIC', '^SML', '^DJI']
     # read data from file
     data = pd.read_csv('joined_closes_weekly.csv')
-    return list(data[name])
+    prices = list(data[name])
+    t = len(prices)
+    adj_returns = np.zeros(t)
+    for i in range(t):
+        adj_returns[i] = prices[i]/(r0[i]*prices[0])-1.
+    return adj_returns
 
 
 def cvar(prices, alpha):

@@ -4,10 +4,9 @@ import utils as ut
 import resource
 
 
-def get_instrument_replica(prices, m, n):
+def get_instrument_replica(prices, m, n, r0):
     alphas = np.array([i/(m+1) for i in range(1, m+1)])
     t = len(prices)
-    r0 = np.ones(t)  # todo: return of a risk-free asset
     returns = ut.get_adj_returns(n, r0)
     mu = returns[:, -1]
     rhos = np.array([ut.cvar(ut.drawdown(prices), alpha) for alpha in alphas])
@@ -41,7 +40,9 @@ def get_instrument_replica(prices, m, n):
 if __name__ == "__main__":
     m = 20
     n = 20
-    prices = ut.get_prices('^GSPC') # todo: adjusted prices?
+    t = 455
+    r0 = np.ones(t)  # todo: return of a risk-free asset
+    prices = ut.get_prices('^GSPC', r0) # todo: adjusted prices?
     # setting max heap size limit
     rsrc = resource.RLIMIT_DATA
     _, hard = resource.getrlimit(rsrc)
@@ -49,4 +50,4 @@ if __name__ == "__main__":
     soft, hard = resource.getrlimit(rsrc)
     print('Soft RAM limit set to:', soft / (1024 ** 3), 'GB')
 
-    print(get_instrument_replica(prices, m, n))
+    print(get_instrument_replica(prices, m, n, r0))
