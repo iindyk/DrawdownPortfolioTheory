@@ -9,8 +9,9 @@ def get_instrument_replica(prices, m, n, r0):
     t = len(prices)
     returns = ut.get_adj_returns(n, r0)
     mu = returns[:, -1]
-    rhos = np.array([ut.cvar(ut.drawdown(prices), alpha) for alpha in alphas])
-    print(rhos)
+    print('number of nans in returns:', np.isnan(returns).sum())
+    drawdown = ut.drawdown(prices)
+    rhos = np.array([ut.cvar(drawdown, alpha) for alpha in alphas])
 
     # create variables
     lambdas = cp.Variable(m)
@@ -27,6 +28,7 @@ def get_instrument_replica(prices, m, n, r0):
     for i in range(m):
         constraints.append(cp.sum(us[i, :]) == 0.)
         constraints.append(cp.sum(aux[i, :]) <= lambdas[i])
+        constraints.append(cp.sum(us[i, :]) >= 0.)
         for k in range(t):
             if k >= 1:
                 constraints.append(cp.sum(us[i, :k]) >= 0.)
@@ -40,10 +42,11 @@ def get_instrument_replica(prices, m, n, r0):
 
 if __name__ == "__main__":
     m = 20
-    n = 20
+    n = 100
     t = 455
-    r0 = np.ones(t)  # todo: return of a risk-free asset
-    prices = ut.get_prices('^IXIC', r0)
+    weekly_r0 = np.power(1.03, 1./52)
+    r0 = np.array([weekly_r0**i for i in range(t)])  # todo: return of a risk-free asset
+    prices = ut.get_prices('^GSPC', r0)
     # setting max heap size limit
     rsrc = resource.RLIMIT_DATA
     _, hard = resource.getrlimit(rsrc)
