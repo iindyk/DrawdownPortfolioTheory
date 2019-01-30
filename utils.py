@@ -52,10 +52,13 @@ def get_diverse_list_of_tickers(n):
 
 
 def get_prices(name, r0):
-    assert name in ['^GSPC', '^IXIC', '^SML', '^DJI']
+    assert name in ['^GSPC', '^IXIC', '^SML', '^DJI', 'A&M']
     # read data from file
     data = pd.read_csv('joined_closes_weekly.csv')
-    prices = list(data[name])
+    if name != 'A&M':
+        prices = list(data[name])
+    else:
+        prices = np.array(list(data['AMZN']))+np.array(list(data['MSFT']))
     t = len(prices)
     adj_returns = np.zeros(t)
     for i in range(t):

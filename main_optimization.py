@@ -24,7 +24,8 @@ def get_instrument_replica(prices, m, n, r0):
                    v*mu == returns@cp.sum(us, axis=0),
                    aux >= 0.,
                    aux >= us]
-    # add constraints for u
+
+    # add constraints for u and aux
     for i in range(m):
         constraints.append(cp.sum(us[i, :]) == 0.)
         constraints.append(cp.sum(aux[i, :]) <= lambdas[i])
@@ -45,8 +46,9 @@ if __name__ == "__main__":
     n = 100
     t = 455
     weekly_r0 = np.power(1.03, 1./52)
-    r0 = np.array([weekly_r0**i for i in range(t)])  # todo: return of a risk-free asset
+    r0 = np.array([weekly_r0**i for i in range(t)])  # adjusted returns of a risk-free asset
     prices = ut.get_prices('^GSPC', r0)
+
     # setting max heap size limit
     rsrc = resource.RLIMIT_DATA
     _, hard = resource.getrlimit(rsrc)
@@ -54,4 +56,7 @@ if __name__ == "__main__":
     soft, hard = resource.getrlimit(rsrc)
     print('Soft RAM limit set to:', soft / (1024 ** 3), 'GB')
 
-    print(get_instrument_replica(prices, m, n, r0))
+    # optimization
+    lambdas_opt, v_opt, us_opt, obj_opt = get_instrument_replica(prices, m, n, r0)
+    print('lambdas:', lambdas_opt)
+    print('approximation quality:', obj_opt/(obj_opt+v_opt))
