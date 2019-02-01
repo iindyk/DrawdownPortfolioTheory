@@ -92,6 +92,7 @@ def inverse_optimization():
     print(sol.message)
     print('lambdas=', sol.x[12:14])
     print('v=', sol.x[14])
+    print('objective=', sol.fun)
 
 
 if __name__ == '__main__':
@@ -102,6 +103,7 @@ if __name__ == '__main__':
     #check_rhos(p1, alphs)
     #check_rhos(p2, alphs)
     #print(optimal_portfolio_of2(p1, p2, alphs, ls))
-    optimal_weights = [0.484, 0.516]
-    p = optimal_weights[0]*p1+optimal_weights[1]*p2
-    check_rhos(p, alphs)
+    #optimal_weights = [0.484, 0.516]
+    #p = optimal_weights[0]*p1+optimal_weights[1]*p2
+    #check_rhos(p, alphs)
+    inverse_optimization()
