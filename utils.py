@@ -16,9 +16,9 @@ def get_adj_returns(n, r0):
     t = len(prices[0])
     adj_returns = np.zeros_like(prices)
     for i in range(n):
-        for j in range(t):
+        for j in range(1, t):
             adj_returns[i, j] = prices[i, j]/(r0[j]*prices[i, 0])-1.
-    return adj_returns
+    return adj_returns[:, 1:]
 
 
 def get_diverse_list_of_tickers(n):
@@ -63,7 +63,7 @@ def get_prices(name, r0):
     adj_returns = np.zeros(t)
     for i in range(t):
         adj_returns[i] = prices[i]/(r0[i]*prices[0])-1.
-    return adj_returns
+    return adj_returns[1:]
 
 
 def cvar(losses, alpha):
