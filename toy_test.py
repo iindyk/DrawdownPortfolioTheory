@@ -18,10 +18,25 @@ def optimal_portfolio_of2(prices1, prices2, alphas, lambdas):
             ret += lambdas[i]*ut.cvar(ut.drawdown(y[0]*prices1+y[1]*prices2), alphas[i])
         return ret
 
-    constraint = LinearConstraint(np.array([prices1[-1], prices2[-1]]), lb=.99999, ub=np.inf)
+    constraint = LinearConstraint(np.array([prices1[-1], prices2[-1]]), lb=1, ub=np.inf)
     sol = minimize(f, np.array([1., 1.]), constraints=constraint)
     print(sol.message)
     return sol.x
+
+
+def optimal_portfolio_of2_beta(prices1, prices2, alphas, lambdas):
+    assert len(lambdas) == len(alphas)
+    m = len(lambdas)
+
+    def f(y):
+        ret = 0.
+        for i in range(m):
+            ret += lambdas[i]*ut.cvar(ut.drawdown(y*prices1+(1-y)*prices2), alphas[i])
+        return ret
+
+    sol = minimize(f, np.array([1.]))
+    print(sol.message)
+    return sol.x, 1-sol.x
 
 
 def inverse_optimization():
@@ -30,8 +45,8 @@ def inverse_optimization():
 
     # cost vector
     c = np.zeros_like(x0)
-    c[12] = 1.674
-    c[13] = 2.242
+    c[12] = 2.5
+    c[13] = 1.429
     c[14] = -1
 
     # equality constraints
@@ -62,13 +77,13 @@ def inverse_optimization():
 
     A_ub[1, 3], A_ub[1, 4] = -1, -1
 
-    A_ub[2, 0], A_ub[2, 12] = -1, -1 / (3 * 0.3)
-    A_ub[3, 1], A_ub[3, 12] = -1, -1 / (3 * 0.3)
-    A_ub[4, 2], A_ub[4, 12] = -1, -1 / (3 * 0.3)
+    A_ub[2, 0], A_ub[2, 12] = -1, -1 / (3 * 0.4)
+    A_ub[3, 1], A_ub[3, 12] = -1, -1 / (3 * 0.4)
+    A_ub[4, 2], A_ub[4, 12] = -1, -1 / (3 * 0.4)
 
-    A_ub[5, 3], A_ub[5, 13] = -1, -1 / (3 * 0.6)
-    A_ub[6, 4], A_ub[6, 13] = -1, -1 / (3 * 0.6)
-    A_ub[7, 5], A_ub[7, 13] = -1, -1 / (3 * 0.6)
+    A_ub[5, 3], A_ub[5, 13] = -1, -1 / (3 * 0.7)
+    A_ub[6, 4], A_ub[6, 13] = -1, -1 / (3 * 0.7)
+    A_ub[7, 5], A_ub[7, 13] = -1, -1 / (3 * 0.7)
 
     A_ub[8, 0], A_ub[8, 6] = 1, -1
     A_ub[9, 1], A_ub[9, 7] = 1, -1
@@ -98,12 +113,12 @@ def inverse_optimization():
 if __name__ == '__main__':
     p1 = np.array([4., 4., 1.])
     p2 = np.array([3., 1., 1.])
-    alphs = [0.3, 0.6]
-    ls = [0, 1]
+    alphs = [0.4, 0.7]
+    ls = [0., 1.]
     #check_rhos(p1, alphs)
     #check_rhos(p2, alphs)
-    #print(optimal_portfolio_of2(p1, p2, alphs, ls))
-    #optimal_weights = [0.484, 0.516]
-    #p = optimal_weights[0]*p1+optimal_weights[1]*p2
-    #check_rhos(p, alphs)
-    inverse_optimization()
+    print(optimal_portfolio_of2_beta(p1, p2, alphs, ls))
+    optimal_weights = [.5, .5]
+    p = optimal_weights[0]*p1+optimal_weights[1]*p2
+    check_rhos(p, alphs)
+    #inverse_optimization()

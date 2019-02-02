@@ -71,7 +71,7 @@ def cvar(losses, alpha):
     l = len(losses)
 
     def f(c):
-        return c + (1. / ((1. - alpha)*l)) * np.sum([max(p - c, 0) for p in losses])
+        return c + (1. / ((alpha)*l)) * np.sum([max(p - c, 0) for p in losses])
     sol = minimize(f, np.array(0.0))
     try:
         return sol.fun[0]

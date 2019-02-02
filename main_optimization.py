@@ -43,11 +43,11 @@ def get_instrument_replica(prices, m, n, r0):
 
 if __name__ == "__main__":
     m = 20
-    n = 20
+    n = 30
     t = 454
     weekly_r0 = np.power(1.03, 1./52)
     r0 = np.array([weekly_r0**i for i in range(t+1)])  # adjusted returns of a risk-free asset
-    prices = ut.get_prices('^GSPC', r0)
+    prices = ut.get_prices('A&M', r0)
 
     # setting max heap size limit
     rsrc = resource.RLIMIT_DATA
