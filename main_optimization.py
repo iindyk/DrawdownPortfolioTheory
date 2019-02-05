@@ -5,14 +5,16 @@ import resource
 
 
 def get_instrument_replica(prices, m, n, r0):
-    alphas = np.array([i/(m+1) for i in range(1, m+1)])
+    #alphas = np.array([i/(m+1) for i in range(1, m+1)])
+    alphas = [0.4, 0.7]
     t = len(prices)
-    returns = ut.get_adj_returns(n, r0)
+    #returns = ut.get_adj_returns(n, r0)
+    returns = np.array([[4., 4., 1.], [3., 1., 1.]])
     mu = returns[:, -1]
     print('number of nans in returns:', np.isnan(returns).sum())
     drawdown = ut.drawdown(prices)
     rhos = np.array([ut.cvar(drawdown, alpha) for alpha in alphas])
-
+    print(rhos)
     # create variables
     lambdas = cp.Variable(m)
     v = cp.Variable()
@@ -42,12 +44,16 @@ def get_instrument_replica(prices, m, n, r0):
 
 
 if __name__ == "__main__":
-    m = 20
-    n = 30
-    t = 454
-    weekly_r0 = np.power(1.03, 1./52)
-    r0 = np.array([weekly_r0**i for i in range(t+1)])  # adjusted returns of a risk-free asset
-    prices = ut.get_prices('A&M', r0)
+    m = 2
+    n = 2
+    #t = 454
+    #weekly_r0 = np.power(1.03, 1./52)
+    #r0 = np.array([weekly_r0**i for i in range(t+1)])  # adjusted returns of a risk-free asset
+    #prices = ut.get_prices('A&M', r0)
+    p1 = np.array([4., 4., 1.])
+    p2 = np.array([3., 1., 1.])
+    optimal_weights = [1., 0.]
+    p = optimal_weights[0] * p1 + optimal_weights[1] * p2
 
     # setting max heap size limit
     rsrc = resource.RLIMIT_DATA
@@ -57,6 +63,6 @@ if __name__ == "__main__":
     print('Soft RAM limit set to:', soft / (1024 ** 3), 'GB')
 
     # optimization
-    lambdas_opt, v_opt, us_opt, obj_opt = get_instrument_replica(prices, m, n, r0)
+    lambdas_opt, v_opt, us_opt, obj_opt = get_instrument_replica(p, m, n, None)
     print('lambdas:', lambdas_opt)
     print('approximation quality:', obj_opt/(obj_opt+v_opt))

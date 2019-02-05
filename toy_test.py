@@ -118,7 +118,7 @@ if __name__ == '__main__':
     #check_rhos(p1, alphs)
     #check_rhos(p2, alphs)
     print(optimal_portfolio_of2_beta(p1, p2, alphs, ls))
-    optimal_weights = [.5, .5]
-    p = optimal_weights[0]*p1+optimal_weights[1]*p2
-    check_rhos(p, alphs)
+    optimal_weights = [1., 0.]
+    #p = optimal_weights[0]*p1+optimal_weights[1]*p2
+    #check_rhos(p, alphs)
     #inverse_optimization()
