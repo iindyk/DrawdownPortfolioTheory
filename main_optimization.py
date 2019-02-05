@@ -5,11 +5,11 @@ import resource
 
 
 def get_instrument_replica(prices, m, n, r0):
-    #alphas = np.array([i/(m+1) for i in range(1, m+1)])
-    alphas = [0.4, 0.7]
+    alphas = np.array([i/(m+1) for i in range(1, m+1)])
     t = len(prices)
     #returns = ut.get_adj_returns(n, r0)
-    returns = np.array([[4., 4., 1.], [3., 1., 1.]])
+    returns = ut.get_all_adj_returns(r0)
+    assert n == len(returns)
     mu = returns[:, -1]
     print('number of nans in returns:', np.isnan(returns).sum())
     drawdown = ut.drawdown(prices)
@@ -44,16 +44,12 @@ def get_instrument_replica(prices, m, n, r0):
 
 
 if __name__ == "__main__":
-    m = 2
-    n = 2
-    #t = 454
-    #weekly_r0 = np.power(1.03, 1./52)
-    #r0 = np.array([weekly_r0**i for i in range(t+1)])  # adjusted returns of a risk-free asset
-    #prices = ut.get_prices('A&M', r0)
-    p1 = np.array([4., 4., 1.])
-    p2 = np.array([3., 1., 1.])
-    optimal_weights = [1., 0.]
-    p = optimal_weights[0] * p1 + optimal_weights[1] * p2
+    m = 10
+    n = 505
+    t = 454
+    weekly_r0 = np.power(1.03, 1./52)
+    r0 = np.array([weekly_r0**i for i in range(t+1)])  # adjusted returns of a risk-free asset
+    prices = ut.get_prices('^GSPC', r0)
 
     # setting max heap size limit
     rsrc = resource.RLIMIT_DATA
@@ -63,6 +59,6 @@ if __name__ == "__main__":
     print('Soft RAM limit set to:', soft / (1024 ** 3), 'GB')
 
     # optimization
-    lambdas_opt, v_opt, us_opt, obj_opt = get_instrument_replica(p, m, n, None)
+    lambdas_opt, v_opt, us_opt, obj_opt = get_instrument_replica(prices, m, n, None)
     print('lambdas:', lambdas_opt)
     print('approximation quality:', obj_opt/(obj_opt+v_opt))

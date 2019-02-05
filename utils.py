@@ -21,6 +21,23 @@ def get_adj_returns(n, r0):
     return adj_returns[:, 1:]
 
 
+def get_all_adj_returns(r0):
+    data = pd.read_csv('joined_closes_weekly.csv')
+    with open("sp500tickers.pickle", "rb") as f:
+        tickers = pickle.load(f)
+        f.close()
+    prices = []
+    for ticker in tickers:
+        prices.append(list(data[ticker['ticker']]))
+    prices = np.array(prices)
+    t = len(prices[0])
+    adj_returns = np.zeros_like(prices)
+    for i in range(len(prices)):
+        for j in range(1, t):
+            adj_returns[i, j] = prices[i, j]/(r0[j]*prices[i, 0])-1.
+    return adj_returns[:, 1:]
+
+
 def get_diverse_list_of_tickers(n):
     f = open("sp500tickers.pickle", "rb")
     tickers = pickle.load(f)
