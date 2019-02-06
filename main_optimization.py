@@ -5,12 +5,10 @@ import resource
 from scipy.optimize import minimize, LinearConstraint
 
 
-def get_instrument_replica(prices, m, n, r0):
+def get_instrument_replica(prices, returns, m):
+    assert len(prices) == len(returns[0])
     alphas = np.array([i/(m+1) for i in range(1, m+1)])
     t = len(prices)
-    returns = ut.get_adj_returns(n, r0)
-    #returns = ut.get_all_adj_returns(r0)
-    #assert n == len(returns)
     mu = returns[:, -1]
     print('number of nans in returns:', np.isnan(returns).sum())
     drawdown = ut.drawdown(prices)
@@ -43,9 +41,8 @@ def get_instrument_replica(prices, m, n, r0):
     return lambdas.value, v.value, us.value, problem.value
 
 
-def forward_portfolio_optimization(alphas, lambdas, n, r0):
+def forward_portfolio_optimization(returns, alphas, lambdas, n):
     i = len(lambdas)
-    returns = ut.get_adj_returns(n, r0)
 
     def f(y):
         ret = 0.
@@ -65,7 +62,11 @@ if __name__ == "__main__":
     t = 454
     weekly_r0 = np.power(1.03, 1./52)
     r0 = np.array([weekly_r0**i for i in range(t+1)])  # adjusted returns of a risk-free asset
-    prices = ut.get_prices('^GSPC', r0)
+    #prices = ut.get_prices('^GSPC', r0)
+    if n == 505:
+        returns = ut.get_all_adj_returns(r0)
+    else:
+        returns = ut.get_adj_returns(n, r0)
 
     # setting max heap size limit
     rsrc = resource.RLIMIT_DATA
@@ -77,10 +78,11 @@ if __name__ == "__main__":
     # forward optimization
     lambdas = np.zeros(m)
     lambdas[3] = 1.
-    y_opt = forward_portfolio_optimization([i/(m+1) for i in range(1, m+1)], lambdas, n, r0)
+    y_opt = forward_portfolio_optimization(returns, [i/(m+1) for i in range(1, m+1)], lambdas, n)
     print(y_opt)
 
     # inverse optimization
-    #lambdas_opt, v_opt, us_opt, obj_opt = get_instrument_replica(prices, m, n, r0)
-    #print('lambdas:', lambdas_opt)
-    #print('approximation quality:', obj_opt/(obj_opt+v_opt))
+    prices = np.array(y_opt)@ut.get_adj_returns(n, r0)
+    lambdas_opt, v_opt, us_opt, obj_opt = get_instrument_replica(prices, returns, m)
+    print('lambdas:', lambdas_opt)
+    print('approximation quality:', obj_opt/(obj_opt+v_opt))
