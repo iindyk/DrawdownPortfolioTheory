@@ -2,19 +2,19 @@ import numpy as np
 import cvxpy as cp
 import utils as ut
 import resource
+from scipy.optimize import minimize, LinearConstraint
 
 
 def get_instrument_replica(prices, m, n, r0):
     alphas = np.array([i/(m+1) for i in range(1, m+1)])
     t = len(prices)
-    #returns = ut.get_adj_returns(n, r0)
-    returns = ut.get_all_adj_returns(r0)
-    assert n == len(returns)
+    returns = ut.get_adj_returns(n, r0)
+    #returns = ut.get_all_adj_returns(r0)
+    #assert n == len(returns)
     mu = returns[:, -1]
     print('number of nans in returns:', np.isnan(returns).sum())
     drawdown = ut.drawdown(prices)
     rhos = np.array([ut.cvar(drawdown, alpha) for alpha in alphas])
-    print(rhos)
     # create variables
     lambdas = cp.Variable(m)
     v = cp.Variable()
@@ -43,9 +43,25 @@ def get_instrument_replica(prices, m, n, r0):
     return lambdas.value, v.value, us.value, problem.value
 
 
+def forward_portfolio_optimization(alphas, lambdas, n, r0):
+    i = len(lambdas)
+    returns = ut.get_adj_returns(n, r0)
+
+    def f(y):
+        ret = 0.
+        for i in range(m):
+            ret += lambdas[i] * ut.cvar(ut.drawdown(y@returns), alphas[i])
+        return ret
+
+    constraint = LinearConstraint(returns[:, -1], lb=1, ub=np.inf)
+    sol = minimize(f, np.ones(n)/n, constraints=constraint)
+    print(sol.message)
+    return sol.x
+
+
 if __name__ == "__main__":
     m = 10
-    n = 505
+    n = 20
     t = 454
     weekly_r0 = np.power(1.03, 1./52)
     r0 = np.array([weekly_r0**i for i in range(t+1)])  # adjusted returns of a risk-free asset
@@ -58,7 +74,13 @@ if __name__ == "__main__":
     soft, hard = resource.getrlimit(rsrc)
     print('Soft RAM limit set to:', soft / (1024 ** 3), 'GB')
 
-    # optimization
-    lambdas_opt, v_opt, us_opt, obj_opt = get_instrument_replica(prices, m, n, None)
-    print('lambdas:', lambdas_opt)
-    print('approximation quality:', obj_opt/(obj_opt+v_opt))
+    # forward optimization
+    lambdas = np.zeros(m)
+    lambdas[3] = 1.
+    y_opt = forward_portfolio_optimization([i/(m+1) for i in range(1, m+1)], lambdas, n, r0)
+    print(y_opt)
+
+    # inverse optimization
+    #lambdas_opt, v_opt, us_opt, obj_opt = get_instrument_replica(prices, m, n, r0)
+    #print('lambdas:', lambdas_opt)
+    #print('approximation quality:', obj_opt/(obj_opt+v_opt))
