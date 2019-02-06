@@ -41,8 +41,7 @@ def get_instrument_replica(prices, returns, m):
     return lambdas.value, v.value, us.value, problem.value
 
 
-def forward_portfolio_optimization(returns, alphas, lambdas, n):
-    i = len(lambdas)
+def forward_portfolio_optimization(returns, alphas, lambdas, m):
 
     def f(y):
         ret = 0.
@@ -50,15 +49,17 @@ def forward_portfolio_optimization(returns, alphas, lambdas, n):
             ret += lambdas[i] * ut.cvar(ut.drawdown(y@returns), alphas[i])
         return ret
 
-    constraint = LinearConstraint(returns[:, -1], lb=1, ub=np.inf)
-    sol = minimize(f, np.ones(n)/n, constraints=constraint)
+    def cons(y):
+        return returns[:, -1]@y - 1.
+
+    sol = minimize(f, np.ones(n)/n, constraints={'type': 'eq', 'fun': cons})
     print(sol.message)
     return sol.x
 
 
 if __name__ == "__main__":
     m = 10
-    n = 20
+    n = 3
     t = 454
     weekly_r0 = np.power(1.03, 1./52)
     r0 = np.array([weekly_r0**i for i in range(t+1)])  # adjusted returns of a risk-free asset
@@ -78,11 +79,12 @@ if __name__ == "__main__":
     # forward optimization
     lambdas = np.zeros(m)
     lambdas[3] = 1.
-    y_opt = forward_portfolio_optimization(returns, [i/(m+1) for i in range(1, m+1)], lambdas, n)
+    y_opt = forward_portfolio_optimization(returns, [i/(m+1) for i in range(1, m+1)], lambdas, m)
     print(y_opt)
+    print(sum(y_opt))
 
     # inverse optimization
-    prices = np.array(y_opt)@ut.get_adj_returns(n, r0)
+    prices = np.array(y_opt)@returns
     lambdas_opt, v_opt, us_opt, obj_opt = get_instrument_replica(prices, returns, m)
     print('lambdas:', lambdas_opt)
     print('approximation quality:', obj_opt/(obj_opt+v_opt))
