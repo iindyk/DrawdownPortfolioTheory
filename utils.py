@@ -56,7 +56,8 @@ def get_diverse_list_of_tickers(n):
     market_cap_na = 0
     for k, sector in zip(partition, sectors):
         # get companies within this sector
-        print(sector, ':', k)
+        if k > 0:
+            print(sector, ':', k)
         tmp_sector = {}
         for ticker in tickers:
             if ticker['sector'] == sector:
