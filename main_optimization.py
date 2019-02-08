@@ -5,9 +5,10 @@ import resource
 from scipy.optimize import minimize, LinearConstraint
 
 
-def get_instrument_replica(prices, returns, m):
+def get_instrument_replica(prices, returns, m, alphas=None):
     assert len(prices) == len(returns[0])
-    alphas = np.array([i/(m+1) for i in range(1, m+1)])
+    if alphas is None:
+        alphas = np.array([i/m for i in range(1, m+1)])
     t = len(prices)
     mu = returns[:, -1]
     print('number of nans in returns:', np.isnan(returns).sum())
@@ -37,7 +38,7 @@ def get_instrument_replica(prices, returns, m):
 
     # optimization
     problem = cp.Problem(objective, constraints)
-    problem.solve(solver=cp.GLPK)
+    problem.solve(solver=cp.GLPK, eps=1e-5)
     return lambdas.value, v.value, us.value, problem.value
 
 
@@ -69,7 +70,7 @@ def forward_portfolio_optimization_uncons(returns, alphas, lambdas, m, n):
                 ret += lambdas[i] * ut.cvar(ut.drawdown(y_ext@returns), alphas[i])
         return ret
 
-    sol = minimize(f, np.ones(n-1)/n)
+    sol = minimize(f, np.ones(n-1)/n, method='Nelder-Mead')
     print(sol.message)
     y_opt = np.zeros(n)
     y_opt[1:] = sol.x
@@ -79,11 +80,10 @@ def forward_portfolio_optimization_uncons(returns, alphas, lambdas, m, n):
 
 if __name__ == "__main__":
     m = 10
-    n = 11
+    n = 505
     t = 454
     weekly_r0 = np.power(1.03, 1./52)
     r0 = np.array([weekly_r0**i for i in range(t+1)])  # adjusted returns of a risk-free asset
-    #prices = ut.get_prices('^GSPC', r0)
     if n == 505:
         returns = ut.get_all_adj_returns(r0)
     else:
@@ -97,17 +97,23 @@ if __name__ == "__main__":
     print('Soft RAM limit set to:', soft / (1024 ** 3), 'GB')
 
     # forward optimization
-    lambdas = np.zeros(m)
-    lambdas[0] = .5
-    lambdas[1] = .5
-    y_opt = forward_portfolio_optimization_uncons(returns, [i/(m+1) for i in range(1, m+1)], lambdas, m, n)
-    print('optimal y=', y_opt)
-    print('constraint violation=', returns[:, -1]@y_opt-1.)
-    # [-0.02278676  0.01615691 -0.0497441  -0.06798902  0.03284526 -0.0700941
-    #   0.06148459  0.08730654 -0.02823773  0.08884205  0.15514543]
+    #lambdas = np.zeros(m)
+    #lambdas[0] = 1
+    #lambdas[1] = .5
+    #y_opt = forward_portfolio_optimization_uncons(returns, [i/(m+1) for i in range(1, m+1)], lambdas, m, n)
+    #print('optimal y=', y_opt)
+    #print('constraint violation=', returns[:, -1]@y_opt-1.)
+    #y_opt = [0.43849665, -0.13002931, -0.17719308, 0.1415266, -0.26019722]
 
     # inverse optimization
-    prices = np.array(y_opt)@returns
+    #weights = np.random.uniform(0, 1, size=n)
+    weights = np.array([1/n]*n)
+    weights = weights/(returns[:, -1] @ weights)
+    print('constraint violation=', returns[:, -1] @ weights - 1.)
+    prices = weights@returns
+    #alphas = [0.1-(i*0.1)/m for i in range(m)]
+    #print(alphas)
+    #prices = ut.get_prices('^GSPC', r0)
     lambdas_opt, v_opt, us_opt, obj_opt = get_instrument_replica(prices, returns, m)
     print('lambdas:', lambdas_opt)
     print('approximation quality:', obj_opt/(obj_opt+v_opt))
