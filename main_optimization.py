@@ -80,7 +80,7 @@ def forward_portfolio_optimization_uncons(returns, alphas, lambdas, m, n):
 
 if __name__ == "__main__":
     m = 10
-    n = 2
+    n = 5
     t = 454
     weekly_r0 = np.power(1.03, 1./52)
     r0 = np.array([weekly_r0**i for i in range(t+1)])  # adjusted returns of a risk-free asset
@@ -111,7 +111,8 @@ if __name__ == "__main__":
     print('constraint violation=', returns[:, -1] @ weights - 1.)
     prices = weights@returns
     #prices = y_opt@returns
-    #print('AvDD=', ut.cvar(ut.drawdown(prices), 1.))
+    print('AvDD=', ut.cvar(ut.drawdown(prices), 1.))
+    # avdd = 0.015836979979042803
 
     #print(alphas)
     #prices = ut.get_prices('^GSPC', r0)
