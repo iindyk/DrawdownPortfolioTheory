@@ -46,7 +46,7 @@ def get_diverse_list_of_tickers(n):
     for ticker in tickers:
         sectors.add(ticker['sector'])
     sectors = list(sectors)
-    sectors.sort()
+    sectors.sort(reverse=True)
     n_sectors = len(sectors)
 
     # split n on sectors

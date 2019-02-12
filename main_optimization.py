@@ -38,7 +38,7 @@ def get_instrument_replica(prices, returns, m, alphas=None):
 
     # optimization
     problem = cp.Problem(objective, constraints)
-    problem.solve(solver=cp.GLPK, eps=1e-5)
+    problem.solve(solver=cp.GLPK)
     return lambdas.value, v.value, us.value, problem.value
 
 
@@ -80,7 +80,7 @@ def forward_portfolio_optimization_uncons(returns, alphas, lambdas, m, n):
 
 if __name__ == "__main__":
     m = 2
-    n = 2
+    n = 3
     t = 454
     weekly_r0 = np.power(1.03, 1./52)
     r0 = np.array([weekly_r0**i for i in range(t+1)])  # adjusted returns of a risk-free asset
@@ -99,20 +99,25 @@ if __name__ == "__main__":
     # forward optimization
     #lambdas = np.zeros(m)
     #lambdas[-1] = 1.
-    lambdas = [0., 1.]
+    ls = [0., 1.]
     alphas = [1., 1./t]
     #alphas = np.array([i/m for i in range(1, m+1)])
-    y_opt = forward_portfolio_optimization_uncons(returns, alphas, lambdas, m, n)
+    y_opt = forward_portfolio_optimization_uncons(returns, alphas, ls, m, n)
+    #y_opt = np.array([1.66890243, -0.82224339, -0.25375047])
     print('optimal y=', y_opt)
     print('constraint violation=', returns[:, -1]@y_opt-1.)
+    print('cvars for y_opt=', [ut.cvar(ut.drawdown(y_opt@returns), alpha) for alpha in alphas])
 
     # inverse optimization
+    a = .9
     #weights = np.random.uniform(0, 1, size=n)
-    #weights = np.array([1/n]*n)
-    #weights = weights/(returns[:, -1] @ weights)
+    weights = np.array([1/n]*n)
+    weights = weights/(returns[:, -1] @ weights)
     #print('constraint violation=', returns[:, -1] @ weights - 1.)
     #prices = weights@returns
-    prices = y_opt@returns
+    print('cvars for weighted=', [ut.cvar(ut.drawdown(weights @ returns), alpha) for alpha in alphas])
+
+    prices = a*y_opt@returns + (1-a)*weights@returns
     #print('AvDD=', ut.cvar(ut.drawdown(prices), 1.))
     # avdd = 0.015836979979042803
 
