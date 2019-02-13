@@ -1,6 +1,7 @@
 import numpy as np
 import cvxpy as cp
 import utils as ut
+from y_opt import y_opt
 import resource
 from scipy.optimize import minimize, LinearConstraint
 
@@ -118,14 +119,14 @@ if __name__ == "__main__":
     m = len(alphas)
     #alphas = np.array([i/m for i in range(1, m+1)])
     #y_opt = forward_portfolio_optimization_uncons(returns, alphas, ls, m, n)
-    y_opt, _ = forward_portfolio_optimization_maxdd(returns)
+    #y_opt, _ = forward_portfolio_optimization_maxdd(returns)
     #y_opt = np.array([1.66890243, -0.82224339, -0.25375047])
-    print('optimal y=', y_opt)
+    #print('optimal y=', y_opt)
     print('constraint violation=', returns[:, -1]@y_opt-1.)
     print('cvars for y_opt=', [ut.cvar(ut.drawdown(y_opt@returns), alpha) for alpha in alphas])
 
     # inverse optimization
-    a = .5
+    a = .7
     #weights = np.random.uniform(0, 1, size=n)
     weights = np.array([1/n]*n)
     weights = weights/(returns[:, -1] @ weights)
