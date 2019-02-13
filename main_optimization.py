@@ -78,9 +78,23 @@ def forward_portfolio_optimization_uncons(returns, alphas, lambdas, m, n):
     return y_opt
 
 
+def forward_portfolio_optimization_maxdd(returns):
+    _n, _t = np.shape(returns)
+    mdd = cp.Variable()
+    y = cp.Variable(_n)
+    objective = cp.Minimize(mdd)
+    constraints = [y@returns[:, -1] == 1]
+    for k in range(_t):
+        for i in range(k):
+            constraints.append(y@returns[:, i]-y@returns[:, k] <= mdd)
+    # optimization
+    problem = cp.Problem(objective, constraints)
+    problem.solve(solver=cp.GLPK)
+    return y.value, problem.value
+
+
 if __name__ == "__main__":
-    m = 2
-    n = 3
+    n = 100
     t = 454
     weekly_r0 = np.power(1.03, 1./52)
     r0 = np.array([weekly_r0**i for i in range(t+1)])  # adjusted returns of a risk-free asset
@@ -99,17 +113,19 @@ if __name__ == "__main__":
     # forward optimization
     #lambdas = np.zeros(m)
     #lambdas[-1] = 1.
-    ls = [0., 1.]
-    alphas = [1., 1./t]
+    #ls = [0., 1.]
+    alphas = [1., 0.6, 0.3, 1./t]
+    m = len(alphas)
     #alphas = np.array([i/m for i in range(1, m+1)])
-    y_opt = forward_portfolio_optimization_uncons(returns, alphas, ls, m, n)
+    #y_opt = forward_portfolio_optimization_uncons(returns, alphas, ls, m, n)
+    y_opt, _ = forward_portfolio_optimization_maxdd(returns)
     #y_opt = np.array([1.66890243, -0.82224339, -0.25375047])
     print('optimal y=', y_opt)
     print('constraint violation=', returns[:, -1]@y_opt-1.)
     print('cvars for y_opt=', [ut.cvar(ut.drawdown(y_opt@returns), alpha) for alpha in alphas])
 
     # inverse optimization
-    a = .9
+    a = .5
     #weights = np.random.uniform(0, 1, size=n)
     weights = np.array([1/n]*n)
     weights = weights/(returns[:, -1] @ weights)
