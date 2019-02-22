@@ -48,7 +48,7 @@ if __name__ == '__main__':
     #prices = ut.get_prices('^GSPC', r0)
     #y_opt, _ = mo.forward_portfolio_optimization_maxdd(returns)
     y_opt = mo.forward_portfolio_optimization_uncons(returns, [0.5], [1.], 1, n)
-    prices = y_opt@returns
+    opt_returns = y_opt @ returns
     alphas = [1., 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 1./t]
 
     # setting max heap size limit
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     print('Soft RAM limit set to:', soft / (1024 ** 3), 'GB')
 
     for a in alphas:
-        l2_norm, l1_norm = get_constraint_violation(prices, returns, a)
+        l2_norm, l1_norm = get_constraint_violation(opt_returns, returns, a)
         l1_norm = l1_norm/n
         l2_norm = np.sqrt(l2_norm**2/n)
         print('for alpha=', a, 'optimality violation: L2=', l2_norm, 'L1=', l1_norm)
