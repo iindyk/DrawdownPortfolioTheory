@@ -37,7 +37,7 @@ def get_constraint_violation(optimal_returns, all_returns, alpha):
 
 
 if __name__ == '__main__':
-    n = 20
+    n = 3
     t = 454
     weekly_r0 = np.power(1.03, 1. / 52)
     r0 = np.array([weekly_r0 ** i for i in range(t + 1)])  # adjusted returns of a risk-free asset
@@ -46,6 +46,7 @@ if __name__ == '__main__':
     else:
         returns = ut.get_adj_returns(n, r0)
     #prices = ut.get_prices('^GSPC', r0)
+    #y_opt, _ = mo.forward_portfolio_optimization_maxdd(returns)
     y_opt = mo.forward_portfolio_optimization_uncons(returns, [0.5], [1.], 1, n)
     prices = y_opt@returns
     alphas = [1., 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 1./t]
