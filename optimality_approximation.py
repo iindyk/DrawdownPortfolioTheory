@@ -2,6 +2,7 @@ import cvxpy as cp
 import utils as ut
 import numpy as np
 import resource
+import main_optimization as mo
 
 
 def get_constraint_violation(optimal_returns, all_returns, alpha):
@@ -31,11 +32,12 @@ def get_constraint_violation(optimal_returns, all_returns, alpha):
         for j in range(t):
             betas[i] += q_opt[j]*(all_returns[i, k[j]]-all_returns[i, j])/cdar
 
-    return np.linalg.norm(all_returns[:, -1]-optimal_returns[-1]*betas)
+    violation = all_returns[:, -1]-optimal_returns[-1]*betas
+    return np.linalg.norm(violation, ord=2), np.linalg.norm(violation, ord=1)
 
 
 if __name__ == '__main__':
-    n = 100
+    n = 20
     t = 454
     weekly_r0 = np.power(1.03, 1. / 52)
     r0 = np.array([weekly_r0 ** i for i in range(t + 1)])  # adjusted returns of a risk-free asset
@@ -43,7 +45,9 @@ if __name__ == '__main__':
         returns = ut.get_all_adj_returns(r0)
     else:
         returns = ut.get_adj_returns(n, r0)
-    prices = ut.get_prices('^GSPC', r0)
+    #prices = ut.get_prices('^GSPC', r0)
+    y_opt = mo.forward_portfolio_optimization_uncons(returns, [0.5], [1.], 1, n)
+    prices = y_opt@returns
     alphas = [1., 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 1./t]
 
     # setting max heap size limit
@@ -54,7 +58,10 @@ if __name__ == '__main__':
     print('Soft RAM limit set to:', soft / (1024 ** 3), 'GB')
 
     for a in alphas:
-        print('for alpha=', a, 'constraint violation=', get_constraint_violation(prices, returns, a))
+        l2_norm, l1_norm = get_constraint_violation(prices, returns, a)
+        l1_norm = l1_norm/n
+        l2_norm = np.sqrt(l2_norm**2/n)
+        print('for alpha=', a, 'optimality violation: L2=', l2_norm, 'L1=', l1_norm)
 
 
 
