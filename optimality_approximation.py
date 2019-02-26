@@ -33,6 +33,7 @@ def get_constraint_violation(optimal_returns, all_returns, alpha):
             betas[i] += q_opt[j]*(all_returns[i, k[j]]-all_returns[i, j])/cdar
 
     violation = all_returns[:, -1]-optimal_returns[-1]*betas
+    print('violations are', violation)
     return np.linalg.norm(violation, ord=2), np.linalg.norm(violation, ord=1)
 
 
